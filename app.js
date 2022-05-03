@@ -25,21 +25,16 @@ const Course = require('./models/Course')
 const Schedule = require('./models/Schedule')
 
 // *********************************************************** //
-//  Loading JSON datasets
+//  Loading constants
 // *********************************************************** //
-//const courses = require('./public/data/courses21-22.json')
-const courses2021 = require('./public/data/courses20-21.json')
-const courses2122 = require('./public/data/courses21-22.json')
-const courses = courses2122
+const apikey = "de1a5bee9e459d"
+
 // *********************************************************** //
 //  Connecting to the database 
 // *********************************************************** //
 
 const mongoose = require( 'mongoose' );
-
-const mongodb_URI = process.env.mongodb_URI
-//const mongodb_URI = 'mongodb://localhost:27017/cs103a_todo'
-//const mongodb_URI = 'mongodb+srv://cs_sj:BrandeisSpr22@cluster0.kgugl.mongodb.net/myFirstDatabase?retryWrites=true&w=majority'
+const mongodb_URI = 'mongodb+srv://logistics:cpa02cs103a@cluster0.4ku5p.mongodb.net/test?authMechanism=SCRAM-SHA-1'
 
 mongoose.connect( mongodb_URI, { useNewUrlParser: true, useUnifiedTopology: true } );
 // fix deprecation warnings
@@ -116,19 +111,31 @@ app.use(
 //  Defining the routes the Express server will respond to
 // *********************************************************** //
 
-
-// here is the code which handles all /login /signin /logout routes
-const auth = require('./routes/auth');
-const { deflateSync } = require("zlib");
-app.use(auth)
-
-// middleware to test is the user is logged in, and if not, send them to the login page
-const isLoggedIn = (req,res,next) => {
-  if (res.locals.loggedIn) {
-    next()
+app.get("/alliances",
+async (req, res, next) => {
+  try{
+    const allalliances = await axios.get("https://politicsandwar.com/api/alliances/?key=" + apikey)
+    res.locals.allalliances = allalliances
+    res.locals.alliances = []
+    res.locals.keyword = 'none'
+    res.render('alliances')
+  } catch (error) {
+    next (error)
   }
-  else res.redirect('/login')
-}
+});
+
+app.post("/alliances",
+async (req, res, next) =>{
+  try{
+    const sortedalliances = res.locals.allalliances.alliances.filter(aa => aa.name.includes(req.keyword))
+    const response = await axios.get("https://politicsandwar.com/api/nations/?key=" + apikey + "&alliance_id=" + res.locals.keyword)
+    res.locals.alliances = response.data.alliances
+    res.locals.keyword = req.body.keyword
+    res.render('alliances')
+  } catch(error){
+    next(error)
+  }
+})
 
 // specify that the server should render the views/index.ejs page for the root path
 // and the index.ejs code will be wrapped in the views/layouts.ejs code which provides
@@ -141,141 +148,6 @@ app.get("/about", (req, res, next) => {
   res.render("about");
 });
 
-app.get("/demo/:subject",
- async (req,res,next) => {
-  try{
-    const theCourses = await Course.find({subject:req.params.subject})
-    res.json(theCourses)
-  } catch (e){
-    next(e);
-  }
-})
-
-app.get("/demo",
- async (req,res,next) => {
-  try{
-    const theCourses = 
-        await Course.find(
-          {subject:'COSI',
-          independent_study:true,
-          enrolled:{$gt:100},
-        })
-    res.json(theCourses)
-  } catch (e){
-    next(e);
-  }
-})
-
-
-/*
-    ToDoList routes
-*/
-app.get('/todo',
-  isLoggedIn,   // redirect to /login if user is not logged in
-  async (req,res,next) => {
-    try{
-      let userId = res.locals.user._id;  // get the user's id
-      let items = await ToDoItem.find({userId:userId}); // lookup the user's todo items
-      res.locals.items = items;  //make the items available in the view
-      res.render("toDo");  // render to the toDo page
-    } catch (e){
-      next(e);
-    }
-  }
-  )
-
-  app.post('/todo/add',
-  isLoggedIn,
-  async (req,res,next) => {
-    try{
-      const {title,description} = req.body; // get title and description from the body
-      const userId = res.locals.user._id; // get the user's id
-      const createdAt = new Date(); // get the current date/time
-      let data = {title, description, userId, createdAt,} // create the data object
-      let item = new ToDoItem(data) // create the database object (and test the types are correct)
-      await item.save() // save the todo item in the database
-      res.redirect('/todo')  // go back to the todo page
-    } catch (e){
-      next(e);
-    }
-  }
-  )
-
-  app.get("/todo/delete/:itemId",
-    isLoggedIn,
-    async (req,res,next) => {
-      try{
-        const itemId=req.params.itemId; // get the id of the item to delete
-        await ToDoItem.deleteOne({_id:itemId}) // remove that item from the database
-        res.redirect('/todo') // go back to the todo page
-      } catch (e){
-        next(e);
-      }
-    }
-  )
-
-  app.get("/todo/completed/:value/:itemId",
-  isLoggedIn,
-  async (req,res,next) => {
-    try{
-      const itemId=req.params.itemId; // get the id of the item to delete
-      const completed = req.params.value=='true';
-      await ToDoItem.findByIdAndUpdate(itemId,{completed}) // remove that item from the database
-      res.redirect('/todo') // go back to the todo page
-    } catch (e){
-      next(e);
-    }
-  }
-)
-
-/* ************************
-  Functions needed for the course finder routes
-   ************************ */
-
-function getNum(coursenum){
-  // separate out a coursenum 103A into 
-  // a num: 103 and a suffix: A
-  i=0;
-  while (i<coursenum.length && '0'<=coursenum[i] && coursenum[i]<='9'){
-    i=i+1;
-  }
-  return coursenum.slice(0,i);
-}
-
-
-function times2str(times){
-  // convert a course.times object into a list of strings
-  // e.g ["Lecture:Mon,Wed 10:00-10:50","Recitation: Thu 5:00-6:30"]
-  if (!times || times.length==0){
-    return ["not scheduled"]
-  } else {
-    return times.map(x => time2str(x))
-  }
-  
-}
-function min2HourMin(m){
-  // converts minutes since midnight into a time string, e.g.
-  // 605 ==> "10:05"  as 10:00 is 60*10=600 minutes after midnight
-  const hour = Math.floor(m/60);
-  const min = m%60;
-  if (min<10){
-    return `${hour}:0${min}`;
-  }else{
-    return `${hour}:${min}`;
-  }
-}
-
-function time2str(time){
-  // creates a Times string for a lecture or recitation, e.g. 
-  //     "Recitation: Thu 5:00-6:30"
-  const start = time.start
-  const end = time.end
-  const days = time.days
-  const meetingType = time['type'] || "Lecture"
-  const location = time['building'] || ""
-
-  return `${meetingType}: ${days.join(",")}: ${min2HourMin(start)}-${min2HourMin(end)} ${location}`
-}
 
 
 
@@ -297,120 +169,6 @@ app.get('/upsertDB',
     }
     const num = await Course.find({}).countDocuments();
     res.send("data uploaded: "+num)
-  }
-)
-
-
-app.post('/courses/bySubject',
-  // show list of courses in a given subject
-  async (req,res,next) => {
-    const {subject} = req.body;
-    const courses = await Course.find({subject:subject,independent_study:false}).sort({term:1,num:1,section:1})
-    
-    res.locals.courses = courses
-    res.locals.times2str = times2str
-    //res.json(courses)
-    res.render('courselist')
-  }
-)
-app.get('/courses/bySubject/:subject',
-  // show list of courses in a given subject
-  async (req,res,next) => {
-    const {subject} = req.params;
-    const courses = await Course.find({subject:subject,independent_study:false}).sort({term:1,num:1,section:1})
-    
-    res.locals.courses = courses
-    res.locals.times2str = times2str
-    //res.json(courses)
-    res.render('courselist')
-  }
-)
-
-app.get('/courses/bySubject/:subject/:coursenum',
-  // show list of courses in a given subject 
-  async (req,res,next) => {
-    const {subject,coursenum} = req.params;
-    const courses = await Course.find({subject,coursenum,independent_study:false}).sort({term:1,num:1,section:1})
-    
-    res.locals.courses = courses
-    res.locals.times2str = times2str
-    //res.json(courses)
-    res.render('courselist')
-  }
-)
-
-app.get('/courses/bySubject/:subject/:coursenum/:section',
-  // show list of courses in a given subject
-  async (req,res,next) => {
-    const {subject,coursenum,section} = req.params;
-    const courses = 
-      await Course.find({subject,coursenum,section,independent_study:false}).sort({term:1,num:1,section:1})
-    
-    res.locals.courses = courses
-    res.locals.times2str = times2str
-    //res.json(courses)
-    res.render('courselist')
-  }
-)
-
-app.get('/courses/show/:courseId',
-  // show all info about a course given its courseid
-  async (req,res,next) => {
-    const {courseId} = req.params;
-    const course = await Course.findOne({_id:courseId})
-    res.locals.course = course
-    res.locals.times2str = times2str
-    //res.json(course)
-    res.render('course')
-  }
-)
-
-app.get('/courses/byInst/:email',
-  // show a list of all courses taught by a given faculty
-  async (req,res,next) => {
-    let email = req.params.email;
-    email = (email.indexOf('@')>0?email:email+"@brandeis.edu")
-    const courses = 
-       await Course
-         .find({instructor:email,enrolled:{$gt:0}})
-         .sort({term:1,enrolled:-1,coursenum:1})
-    //res.json(courses)
-    res.locals.courses = courses
-    res.locals.times2str = times2str
-    res.render('courselist')
-  } 
-)
-
-app.get('/courses/byName/:name',
-  async (req,res,next) => {
-    let name = req.params.name;
-    const courses = 
-       await Course
-         .find({name,enrolled:{$gt:0}})
-         .sort({term:1,enrolled:-1})
-    //res.json(courses)
-    res.locals.courses = courses
-    res.locals.times2str = times2str
-    res.render('courselist')
-  } 
-)
-
-app.post('/courses/byInst',
-  // show courses taught by a faculty send from a form
-  async (req,res,next) => {
-    try {
-          const email = req.body.email+"@brandeis.edu";
-          const courses = 
-            await Course
-                    .find({instructor:email,independent_study:false})
-                    .sort({term:1,num:1,section:1})
-          //res.json(courses)
-          res.locals.courses = courses
-          res.locals.times2str = times2str
-          res.render('courselist')
-    } catch(error){
-      next(error)
-    }
   }
 )
 
@@ -690,6 +448,7 @@ app.set("port", port);
 // and now we startup the server listening on that port
 const http = require("http");
 const { reset } = require("nodemon");
+const { resourceLimits } = require("worker_threads");
 const server = http.createServer(app);
 
 server.listen(port);
