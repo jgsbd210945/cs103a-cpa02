@@ -2,8 +2,41 @@
 <i>Imported directly from the PnW API</i>
 <hr>
 <form method="post" action="/alliances">
-    Enter an alliance to look at more closely. Note that spelling and capitalization <i>must</i> be correct.
-    <input type="text" name="alliance">
+    Enter a keyword to look at some alliances more closely. Note that capitalization <i>must</i> be correct.
+    <input type="text" name="keyword">
     <input type="submit">
 </form>
 
+<% if (sortedalliances==[]) {%>
+
+    Type in a keyword to get a list of alliances.
+
+<% } else if (sortedalliances==null) {%>
+
+    No alliances with that keyword found. Try again.
+
+<%} else if (sortedalliances.length>0){%>
+
+    <h2 class="mt-5">Alliances containing the keyword: <%= keyword %></h2>
+    <div class="d-flex flex-wrap text-center overflow-scroll">
+        <% for (alliance of sortedalliances){%>
+            <div class="p-3 m-3 border border-primary bg-light w-25">
+                <br>
+                <a href="https://politicsandwar.com/alliance/id=<%= alliance.id %>">
+                    <img src="<%= alliance.flagurl %>" width="100" alt="Alliance Flag">
+                </a>
+                <hr>
+                <a href="https://politicsandwar.com/alliance/id=<%= alliance.id %>">
+                    <%= alliance.name %> (<%= alliance.acronym %>)
+                </a><br>
+                Rank: <%= alliance.rank %><br>
+                Number of Members: <%= alliance.members %><br>
+                Score: <%= alliance.score %><br>
+                <a href="<%= alliance.ircchan %>">
+                    Discord Server
+                </a>
+            </div>
+        <%}%>
+    </div>
+
+<%}%>

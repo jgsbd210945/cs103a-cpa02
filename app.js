@@ -27,6 +27,7 @@ const Schedule = require('./models/Schedule')
 // *********************************************************** //
 //  Loading constants
 // *********************************************************** //
+
 const apikey = "de1a5bee9e459d"
 
 // *********************************************************** //
@@ -111,31 +112,40 @@ app.use(
 //  Defining the routes the Express server will respond to
 // *********************************************************** //
 
-app.get("/alliances",
-async (req, res, next) => {
-  try{
-    const allalliances = await axios.get("https://politicsandwar.com/api/alliances/?key=" + apikey)
-    res.locals.allalliances = allalliances
-    res.locals.alliances = []
+
+// here is the code which handles all /login /signin /logout routes
+const auth = require('./routes/auth');
+const { deflateSync } = require("zlib");
+app.use(auth)
+
+// middleware to test is the user is logged in, and if not, send them to the login page
+const isLoggedIn = (req,res,next) => {
+  if (res.locals.loggedIn) {
+    next()
+  }
+  else res.redirect('/login')
+}
+
+app.get("/alliances", (req, res, next) => {
+    res.locals.sortedalliances = []
     res.locals.keyword = 'none'
     res.render('alliances')
-  } catch (error) {
-    next (error)
-  }
 });
 
 app.post("/alliances",
 async (req, res, next) =>{
   try{
-    const sortedalliances = res.locals.allalliances.alliances.filter(aa => aa.name.includes(req.keyword))
-    const response = await axios.get("https://politicsandwar.com/api/nations/?key=" + apikey + "&alliance_id=" + res.locals.keyword)
-    res.locals.alliances = response.data.alliances
+    var allalliances = await axios.get("https://politicsandwar.com/api/alliances/?key=" + apikey)
+    allalliances = allalliances.data.alliances // parsing it all
+    const sortedalliances = allalliances.filter(aa => aa.name.includes(req.body.keyword))
+    res.locals.sortedalliances = sortedalliances
     res.locals.keyword = req.body.keyword
     res.render('alliances')
   } catch(error){
     next(error)
   }
 })
+
 
 // specify that the server should render the views/index.ejs page for the root path
 // and the index.ejs code will be wrapped in the views/layouts.ejs code which provides
@@ -366,6 +376,7 @@ app.get('/bigclasses/:size',
   })
 
 
+  
 app.use(isLoggedIn)
 
 app.get('/addCourse/:courseId',
