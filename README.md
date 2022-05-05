@@ -3,7 +3,7 @@
 This site uses the PnW API to find alliances and their corresponding nation, using API to provide information.
 
 # How to Open the Site
-To open the site, you want to run `npm install` and then click "Start Debugging" on the app.js file in VSCode. Then, you can open the site by going to localhost:5000.
+To open the site, you want to run `npm install` and then run all the commands in the startup.ps1 file in VSCode. Then, you can open the site by going to localhost:5000.
 The site will be open then!
 
 # What It Does
