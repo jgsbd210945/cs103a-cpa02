@@ -1,0 +1,67 @@
+<h1>Members of <%= members[0].alliance %></h1>
+<br>
+<br>
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Nation Name/Link</th>
+            <th>Leader Name</th>
+            <th>City Count</th>
+            <th>Score</th>
+            <th>Last Active</th>
+            <th>Offensive Wars</th>
+            <th>Defensive Wars</th>
+            <th>Continent</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% for (nation of members) {%>
+            <tr class="mb-2">
+                <td><a href="https://politicsandwar.com/nation/id=<%= nation.nationid %>">
+                    <%= nation.nation %>
+                </a></td>
+                <td><%= nation.leader %></td>
+                <td><%= nation.cities %></td>
+                <td><%= nation.score %></td>
+                <td><%= (nation.minutessinceactive/60).toFixed(2) %> hours ago</td>
+                <td><%= nation.offensivewars %></td>
+                <td><%= nation.defensivewars %></td>
+                <td><%= nation.continent %></td>
+            </tr>
+        <%}%>
+    </tbody>
+</table>
+<hr>
+<h2>Applicants of <%= members[0].alliance %></h2>
+<br>
+<br>
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Nation Name/Link</th>
+            <th>Leader Name</th>
+            <th>City Count</th>
+            <th>Score</th>
+            <th>Last Active</th>
+            <th>Offensive Wars</th>
+            <th>Defensive Wars</th>
+            <th>Continent</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% for (nation of applicants) {%>
+            <tr class="mb-2">
+                <td><a href="https://politicsandwar.com/nation/id=<%= nation.nationid %>">
+                    <%= nation.nation %>
+                </a></td>
+                <td><%= nation.leader %></td>
+                <td><%= nation.cities %></td>
+                <td><%= nation.score %></td>
+                <td><%= (nation.minutessinceactive/60).toFixed(2) %> hours ago</td>
+                <td><%= nation.offensivewars %></td>
+                <td><%= nation.defensivewars %></td>
+                <td><%= nation.continent %></td>
+            </tr>
+        <%}%>
+    </tbody>
+</table>

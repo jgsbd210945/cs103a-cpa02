@@ -1,0 +1,21 @@
+<div class="text-center">
+    <h1><img src="<%= alliance.flagurl %>" alt="Alliance Flag"></h1><br>
+    <h1><%= alliance.name %></h1><br>
+    <h4><i>Also known as: <%= alliance.acronym %></i></h4><br>
+    <br>
+    <h6>Rank: <%= alliance.rank %><br></h6>
+    <h6>Score: <%= alliance.score.toFixed(2) %><br></h6>
+    <h6>Number of Members (including applicants and VMed nations): <%= alliance.members %><br></h6>
+    <h6>Average Score: <%= alliance.avgscore.toFixed(2) %><br></h6>
+    <h6>Color Bloc: <%= alliance.color %> <br></h6>
+    <br>
+    <a href="https://politicsandwar.com/alliance/id=<%= alliance.id %>">
+        In-Game Link
+    </a><br>
+    <a href="<%= alliance.ircchan %>">
+        Discord Server
+    </a><br>
+    <a href="/nationslist/<%= alliance.id %>">
+        List of Nations
+    </a>
+</div>
