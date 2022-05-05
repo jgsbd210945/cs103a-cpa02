@@ -20,7 +20,11 @@ var MongoDBStore = require('connect-mongodb-session')(session);
 // *********************************************************** //
 //  Loading models
 // *********************************************************** //
-const ToDoItem = require("./models/ToDoItem")
+
+const BaseInfo = require("./models/BaseInfo")
+const Military = require("./models/Military")
+const Resources = require("./models/Resources")
+
 // *********************************************************** //
 //  Loading constants
 // *********************************************************** //
@@ -204,144 +208,15 @@ async (req, res, next) =>{
 
 app.get('/upsertDB',
   async (req,res,next) => {
-    await Course.deleteMany({})
-    for (course of courses){ 
-      const {subject,coursenum,section,term}=course;
-      const num = getNum(coursenum);
-      course.num=num
-      course.suffix = coursenum.slice(num.length)
-      await Course.findOneAndUpdate({subject,coursenum,section,term},course,{upsert:true})
+    for (nation of nations){ 
+      const {id,name,leader,timezone,cities,score,money,steel,aluminum,gasoline,munitions,uranium,food,soldiers,tanks,aircraft,ships,missiles,nukes}=nation;
+      nation.BaseInfo = new BaseInfo({id,name,leader,timezone,cities,score})
+      nation.Resources = new Resources({money,steel,aluminum,gasoline,munitions,uranium,food})
+      nation.Military = new Military({soldiers,tanks,aircraft,ships,missiles,nukes})
     }
-    const num = await Course.find({}).countDocuments();
     res.send("data uploaded: "+num)
   }
 )
-
-/*
-  aggregation example ...
-  here we create an aggregation pipeline using the
-  mongo compass aggregation tool
-  and then use it to find the total number of students
-  enrolled in each subject
-*/
-const demo4stages =
-
-    [
-      // first we add a new field, email, which is the third element of the instructor value
-      { $addFields: {  email: { $arrayElemAt: [ '$instructor', 2]}}},
-
-      // then we filter out courses with <8 students
-      {$match: {  enrolled: {$gte:8}}},
-
-      // then we group by email and find average enrollment
-      {$group: {
-            _id: '$email',
-            courseCount: {  $avg: '$enrolled'}
-        }},
-
-      // then we sort by courseCount, decreasing
-      {$sort: { 'courseCount': -1}}
-    ]
-
-
-const pivotDemo = 
-      [
-        { // then we filter out courses with <8 students
-          $match: {
-            'enrolled': {
-              '$gte': 8
-            }
-          }
-        }, {// then we group by email and find various enrollment stats
-          $group: {
-            '_id': '$instructor', 
-            'courseCount': {
-              '$sum': 1
-            },
-            'avgClassSize': {
-              '$avg': '$enrolled'
-            },
-            'maxClassSize': {
-              '$max': '$enrolled'
-            },
-            'minClassSize': {
-              '$min': '$enrolled'
-            },
-            'totalEnrollment': {
-              '$sum': '$enrolled'
-            },
-            'classes':{
-              '$push': {s:'$subject',c:'$coursenum',z:'$section',t:'$term',e:'$enrolled',n:'$name'}
-            }
-          }
-        }, // then we filter for faculty with at least 300 students total
-            {$match: {
-              'totalEnrollment': {
-                '$gte': 300
-              }
-            }
-          }, { // then we sort by courseCount, decreasing
-          $sort: {
-            'totalEnrollment': -1
-          }
-        }
-      ]
-
-const deptTeachingLoads = (dept) => 
-      [
-        { // then we filter out courses with <8 students
-          $match: {
-            'subject': dept,
-            'enrolled':{$gt:0},
-          }
-        }, {// then we group by email and find various enrollment stats
-          $group: {
-            '_id': '$instructor', 
-            'courseCount': {
-              '$sum': 1
-            },
-            'avgClassSize': {
-              '$avg': '$enrolled'
-            },
-            'maxClassSize': {
-              '$max': '$enrolled'
-            },
-            'minClassSize': {
-              '$min': '$enrolled'
-            },
-            'totalEnrollment': {
-              '$sum': '$enrolled'
-            },
-          }
-        }, { // then we sort by courseCount, decreasing
-          $sort: {
-            'totalEnrollment': -1
-          }
-        }
-      ]
-
-
-  const smallClassDepts = 
-  [
-    {
-      '$match': {
-        'enrolled': {
-          '$lt': 10
-        }
-      }
-    }, {
-      '$group': {
-        '_id': '$subject', 
-        'numStudents': {
-          '$sum': '$enrolled'
-        }
-      }
-    }, {
-      '$sort': {
-        'numStudents': -1
-      }
-    }
-  ]
 
 // here we catch 404 errors and forward to error handler
 app.use(function(req, res, next) {
