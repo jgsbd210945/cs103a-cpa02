@@ -1,39 +1,75 @@
 <h1>Alliances in <a href="https://politicsandwar.com/">Politics and War</a></h1>
-<i>Imported directly from the PnW API</i>
+<i>Imported directly from the PnW API</i><br>
+<i>Current Number of Alliances in the Game: <%= totalalliances.length %></i>
 <hr>
 <form method="post" action="/alliances">
-    Enter a keyword to look at some alliances more closely. Note that capitalization <i>must</i> be correct.
+    Enter a keyword to look at a few specific alliances. Note that capitalization <i>must</i> be correct.<br>
     <input type="text" name="keyword">
     <input type="submit">
 </form>
 
-<% if (sortedalliances==[]) {%>
+<% if (sortedalliances.length==0) {%>
 
-    Type in a keyword to get a list of alliances.
+    <br><br>Either you have not typed in anything, or there are no alliances with that name.<br>Type in a keyword to get a shorter list of alliances.
 
-<% } else if (sortedalliances==null) {%>
+    <hr>
 
-    No alliances with that keyword found. Try again.
-
-<%} else if (sortedalliances.length>0){%>
-
-    <h2 class="mt-5">Alliances containing the keyword: <%= keyword %></h2>
     <div class="d-flex flex-wrap text-center overflow-scroll">
-        <% for (alliance of sortedalliances){%>
+        <% for (alliance of totalalliances){%>
             <div class="p-3 m-3 border border-primary bg-light w-25">
                 <br>
-                <a href="https://politicsandwar.com/alliance/id=<%= alliance.id %>">
-                    <img src="<%= alliance.flagurl %>" width="100" alt="Alliance Flag">
+                <a href="/alliance/<%= alliance.id %>">
+                    <img src="<%= alliance.flagurl %>" width="200" alt="Alliance Flag">
                 </a>
                 <hr>
-                <a href="https://politicsandwar.com/alliance/id=<%= alliance.id %>">
+                <a href="/alliance/<%= alliance.id %>">
                     <%= alliance.name %> (<%= alliance.acronym %>)
                 </a><br>
                 Rank: <%= alliance.rank %><br>
                 Number of Members: <%= alliance.members %><br>
-                Score: <%= alliance.score %><br>
+                Score: <%= alliance.score.toFixed(2) %><br>
+                <hr>
+                <a href="https://politicsandwar.com/alliance/id=<%= alliance.id %>">
+                    In-Game Link
+                </a><br>
                 <a href="<%= alliance.ircchan %>">
                     Discord Server
+                </a><br>
+                <a href="/nationslist/<%= alliance.id %>">
+                    List of Nations
+                </a>
+            </div>
+        <%}%>
+    </div>
+
+<%} else if (sortedalliances.length>0){%>
+
+    <hr>
+
+    <h4 class="mt-5">Alliances containing the keyword: <b><%= keyword %></b></h4>
+    <div class="d-flex flex-wrap text-center overflow-scroll">
+        <% for (alliance of sortedalliances){%>
+            <div class="p-3 m-3 border border-primary bg-light w-25">
+                <br>
+                <a href="/alliance/<%= alliance.id %>">
+                    <img src="<%= alliance.flagurl %>" width="200" alt="Alliance Flag">
+                </a>
+                <hr>
+                <a href="/alliance/<%= alliance.id %>">
+                    <%= alliance.name %> (<%= alliance.acronym %>)
+                </a><br>
+                Rank: <%= alliance.rank %><br>
+                Number of Members: <%= alliance.members %><br>
+                Score: <%= alliance.score.toFixed(2) %><br>
+                <hr>
+                <a href="https://politicsandwar.com/alliance/id=<%= alliance.id %>">
+                    In-Game Link
+                </a><br>
+                <a href="<%= alliance.ircchan %>">
+                    Discord Server
+                </a><br>
+                <a href="/nationslist/<%= alliance.id %>">
+                    List of Nations
                 </a>
             </div>
         <%}%>

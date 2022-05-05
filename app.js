@@ -126,10 +126,18 @@ const isLoggedIn = (req,res,next) => {
   else res.redirect('/login')
 }
 
-app.get("/alliances", (req, res, next) => {
+app.get("/alliances",
+async (req, res, next) => {
+  try {
+    var totalalliances = await axios.get("https://politicsandwar.com/api/alliances/?key=" + apikey)
+    totalalliances = totalalliances.data.alliances // parsing it all
+    res.locals.totalalliances=totalalliances
     res.locals.sortedalliances = []
-    res.locals.keyword = 'none'
+    res.locals.keyword = ""
     res.render('alliances')
+  } catch(error){
+    next(error)
+  }
 });
 
 app.post("/alliances",
@@ -137,11 +145,36 @@ async (req, res, next) =>{
   try{
     var allalliances = await axios.get("https://politicsandwar.com/api/alliances/?key=" + apikey)
     allalliances = allalliances.data.alliances // parsing it all
+    res.locals.totalalliances = allalliances
     const sortedalliances = allalliances.filter(aa => aa.name.includes(req.body.keyword))
     res.locals.sortedalliances = sortedalliances
     res.locals.keyword = req.body.keyword
     res.render('alliances')
   } catch(error){
+    next(error)
+  }
+})
+
+app.get("/alliance/:allianceID",
+async (req, res, next) =>{
+  try{
+    var allalliances = await axios.get("https://politicsandwar.com/api/alliances/?key=" + apikey)
+    const alliance = allalliances.data.alliances.filter(aa => aa.id == req.params.allianceID)
+    res.locals.alliance = alliance[0]
+    res.render('alliance')
+  } catch (error) {
+    next(error)
+  }
+})
+
+app.get("/nationslist/:allianceID",
+async (req, res, next) =>{
+  try {
+    var nationslist = await axios.get("https://politicsandwar.com/api/nations/?key=" + apikey + "&alliance_id=" + req.params.allianceID)
+    res.locals.members = nationslist.data.nations.filter(nation => nation.allianceposition >= 2)
+    res.locals.applicants = nationslist.data.nations.filter(nation => nation.allianceposition == 1)
+    res.render('nationslist')
+  } catch (error) {
     next(error)
   }
 })
@@ -460,6 +493,7 @@ app.set("port", port);
 const http = require("http");
 const { reset } = require("nodemon");
 const { resourceLimits } = require("worker_threads");
+const { networkInterfaces } = require("os");
 const server = http.createServer(app);
 
 server.listen(port);
