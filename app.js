@@ -25,7 +25,7 @@ const ToDoItem = require("./models/ToDoItem")
 //  Loading constants
 // *********************************************************** //
 
-const apikey = "de1a5bee9e459d"
+const apikey = process.env.apikey
 
 // *********************************************************** //
 //  Connecting to the database 
