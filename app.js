@@ -21,9 +21,7 @@ var MongoDBStore = require('connect-mongodb-session')(session);
 //  Loading models
 // *********************************************************** //
 
-const BaseInfo = require("./models/BaseInfo")
-const Military = require("./models/Military")
-const Resources = require("./models/Resources")
+const Nation = require("./models/Nation")
 
 // *********************************************************** //
 //  Loading constants
@@ -199,6 +197,27 @@ async (req, res, next) =>{
   }
 })
 
+app.get("/RoseCities",
+async (req,res,next) => {
+  res.locals.citycount=-1
+  res.render("RoseCities")
+})
+
+app.post("/RoseCities",
+async (req,res,next) => {
+  const citycount = req.body;
+  const citynations = await Nation.find({Cities:citycount})
+  res.locals.citynations = citynations
+  res.render("RoseCities")
+})
+
+app.get("/RoseCities/:citycount",
+async (req,res,next) => {
+  const citycount = req.params;
+  const citynations = await Nation.find({Cities:citycount})
+  res.locals.citynations = citynations
+  res.render("RoseCities")
+})
 
 /* ************************
   Loading (or reloading) the data into a collection
@@ -208,12 +227,12 @@ async (req, res, next) =>{
 
 app.get('/upsertDB',
   async (req,res,next) => {
+    await Nation.deleteMany({})
     for (nation of nations){ 
       const {id,name,leader,timezone,cities,score,money,steel,aluminum,gasoline,munitions,uranium,food,soldiers,tanks,aircraft,ships,missiles,nukes}=nation;
-      nation.BaseInfo = new BaseInfo({id,name,leader,timezone,cities,score})
-      nation.Resources = new Resources({money,steel,aluminum,gasoline,munitions,uranium,food})
-      nation.Military = new Military({soldiers,tanks,aircraft,ships,missiles,nukes})
+      await Nation.findOneAndUpdate({id,name,leader,timezone,cities,score,money,steel,aluminum,gasoline,munitions,uranium,food,soldiers,tanks,aircraft,ships,missiles,nukes},nation,{upsert:true})
     }
+    const num = await Nation.find({}).countDocuments();
     res.send("data uploaded: "+num)
   }
 )
