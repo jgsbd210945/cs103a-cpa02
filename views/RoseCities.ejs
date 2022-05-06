@@ -1,0 +1,36 @@
+<h1>Finding Rose Nations By Cities</h1>
+<br><br>
+<form method="post" action="/alliances">
+    Please enter the city counts you are looking for:<br>
+    <input type="number" name="citycount">
+    <input type="submit">
+</form>
+
+<% if (citycount > 0) {%>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Nation ID</th>
+                <th>Nation Name/Link</th>
+                <th>Leader Name</th>
+                <th>City Count</th>
+                <th>Score</th>
+                <th>Update Timezone</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% for (nation of citynations) {%>
+                <tr class="mb-2">
+                    <td><%= nation.'Nation ID' %></td>
+                    <td><a href="https://politicsandwar.com/nation/id=<%= nation.'Nation ID' %>">
+                        <%= nation.'Nation Name' %>
+                    </a></td>
+                    <td><%= nation.'Leader Name' %></td>
+                    <td><%= nation.Cities %></td>
+                    <td><%= nation.Score %></td>
+                    <td><%= nation.'Update Timezone' %></td>
+                </tr>
+            <%}%>
+        </tbody>
+    </table>
+<%}%>
