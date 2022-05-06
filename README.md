@@ -18,3 +18,6 @@ You can find links to the alliance in-game and the discord server on both the ge
 
 You'll also find a link to the list of all nations in the alliance, which will give you a list of members and applicant in an alliance as seen below.
 ![image](https://user-images.githubusercontent.com/99208757/166990395-a791411d-92d9-4d74-9482-dcd2dfd8cc32.png)
+
+# Zoom Link to Explainer Video
+https://brandeis.zoom.us/rec/share/-2Q0-UFdhma6yDJpRWVAFpCPLz8rSUF5LFOeiYiwey33vq91knkO-5s1DyB8HZA.GYvcUXKJRym0YPLP?startTime=1651867026000
