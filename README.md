@@ -1,4 +1,4 @@
-### CPA02 - Politics and War Search
+### CPA02 - Politics and War Search [NONFUNCTIONAL - I've removed the API Key]
 
 This site uses the PnW API to find alliances and their corresponding nation, using API to provide information.
 
